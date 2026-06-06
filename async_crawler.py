@@ -6,7 +6,9 @@ from crawl import PageData, extract_page_data, normalize_url, get_urls_from_html
 
 
 class AsyncCrawler:
-    def __init__(self, base_url: str, max_concurrency: int = 3, max_pages: int = 50) -> None:
+    def __init__(
+        self, base_url: str, max_concurrency: int = 3, max_pages: int = 50
+    ) -> None:
         self.base_url = base_url
         self.base_domain = urlparse(base_url).netloc
         self.page_data: dict[str, PageData] = {}
@@ -22,7 +24,12 @@ class AsyncCrawler:
         self.session = aiohttp.ClientSession()
         return self
 
-    async def __aexit__(self,exc_type: type[BaseException] | None,exc_val: BaseException | None,exc_tb: TracebackType | None,) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         assert self.session is not None
         await self.session.close()
 
@@ -49,7 +56,6 @@ class AsyncCrawler:
             async with self.session.get(
                 url, headers={"User-Agent": "BootCrawler/1.0"}
             ) as response:
-
                 if response.status > 399:
                     return None
 
@@ -96,8 +102,10 @@ class AsyncCrawler:
 
             task = asyncio.create_task(self.crawl_page(next_url))
             self.all_tasks.add(task)
+
             def _cleanup(t: asyncio.Task) -> None:
                 self.all_tasks.discard(t)
+
             task.add_done_callback(_cleanup)
             tasks.append(task)
 
@@ -122,6 +130,8 @@ class AsyncCrawler:
         return self.page_data
 
 
-async def crawl_site_async(base_url: str, max_concurrency: int = 3, max_pages: int = 50) -> dict[str, PageData]:
+async def crawl_site_async(
+    base_url: str, max_concurrency: int = 3, max_pages: int = 50
+) -> dict[str, PageData]:
     async with AsyncCrawler(base_url, max_concurrency, max_pages) as crawler:
         return await crawler.crawl()

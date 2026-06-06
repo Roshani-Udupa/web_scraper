@@ -2,6 +2,7 @@ from urllib.parse import urlparse, urljoin
 from bs4 import BeautifulSoup
 from typing import TypedDict
 
+
 class PageData(TypedDict):
     url: str
     heading: str
@@ -9,16 +10,18 @@ class PageData(TypedDict):
     outgoing_links: list[str]
     image_urls: list[str]
 
+
 def normalize_url(url: str) -> str:
     parsed = urlparse(url)
 
     netloc = parsed.netloc.lower()
 
-    path = parsed.path.rstrip('/')
+    path = parsed.path.rstrip("/")
     return f"{netloc}{path}"
 
+
 def get_heading_from_html(html: str) -> str:
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, "html.parser")
     if soup.find("h1"):
         return soup.h1.get_text()
     elif soup.find("h2"):
@@ -26,8 +29,9 @@ def get_heading_from_html(html: str) -> str:
     else:
         return ""
 
+
 def get_first_paragraph_from_html(html: str) -> str:
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, "html.parser")
     if soup.find("main") and soup.find("main").find("p"):
         return soup.main.p.get_text()
     elif soup.find("p"):
@@ -35,8 +39,9 @@ def get_first_paragraph_from_html(html: str) -> str:
     else:
         return ""
 
-def get_urls_from_html(html:str, base_url:str)->list[str]:
-    soup = BeautifulSoup(html, 'html.parser')
+
+def get_urls_from_html(html: str, base_url: str) -> list[str]:
+    soup = BeautifulSoup(html, "html.parser")
     links_url = []
     links = soup.find_all("a")
     for link in links:
@@ -46,8 +51,9 @@ def get_urls_from_html(html:str, base_url:str)->list[str]:
             links_url.append(abs_url)
     return links_url
 
-def get_images_from_html(html:str, base_url:str)->list[str]:
-    soup = BeautifulSoup(html, 'html.parser')
+
+def get_images_from_html(html: str, base_url: str) -> list[str]:
+    soup = BeautifulSoup(html, "html.parser")
     image_urls = []
     images = soup.find_all("img")
     for image in images:
@@ -55,8 +61,9 @@ def get_images_from_html(html:str, base_url:str)->list[str]:
         if src:
             abs_url = urljoin(base_url, src)
             image_urls.append(abs_url)
-    
+
     return image_urls
+
 
 def extract_page_data(html: str, page_url: str) -> PageData:
     heading = get_heading_from_html(html)
