@@ -1,8 +1,6 @@
 from urllib.parse import urlparse, urljoin
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
 from typing import TypedDict
-import sys
-import requests
 
 class PageData(TypedDict):
     url: str
@@ -73,37 +71,3 @@ def extract_page_data(html: str, page_url: str) -> PageData:
         "outgoing_links": outgoing_links,
         "image_urls": image_urls,
     }
-
-def get_html(url:str)->str:
-    response = requests.get(url, headers={"User-Agent": "BootCrawler/1.0"})
-    response.raise_for_status()
-    content_type = response.headers.get("Content-Type", "")
-    if "text/html" not in content_type:
-        raise ValueError(f"Expected text/html, got {content_type}")
-    return response.text
-
-def crawl_page(base_url, current_url=None, page_data=None):
-    if current_url is None:
-        current_url = base_url
-    if page_data is None:
-        page_data = PageData()
-
-    if urlparse(base_url).netloc != urlparse(current_url).netloc:
-        return page_data
-
-    normalized_url = normalize_url(current_url)
-    if normalized_url in page_data:
-        return page_data
-
-    print(f"Crawling: {current_url}")
-    try:
-        html = get_html(current_url)
-        page_info = extract_page_data(html, current_url)
-        page_data[normalized_url] = page_info
-        urls = get_urls_from_html(html, current_url)
-        for url in urls:
-            crawl_page(base_url, url, page_data)
-    except Exception as e:
-        print(f"Error crawling {current_url}: {e}")
-        
-    return page_data
